@@ -5,15 +5,9 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-<<<<<<< HEAD
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
-=======
-%token PLUS MINUS TIMES DIVIDE ASSIGN
-%token EQ NEQ LT LEQ GT GEQ TRUE FALSE
-%token RETURN IF ELSE FOR WHILE INT BOOL
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
 %token <int> LITERAL
 %token <string> ID
 %token EOF
@@ -42,26 +36,10 @@ decls:
  | decls vdecl { ($2 :: fst $1), snd $1 }
  | decls fdecl { fst $1, ($2 :: snd $1) }
 
-<<<<<<< HEAD
 fdecl:
    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
      { { typ = $1;
 	 fname = $2;
-=======
-/*
- * fdecl returns a type func_decl defined in ast.ml
- * a kind of c struct
- *
- * The locals and the body will come back in reverse order
- * So we flip them around to happen in the correct chronological
- * order written in the source code
- * 
- */
-fdecl:
-   typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
-     { { typ = $1
-   fname = $2;
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
 	 formals = $4;
 	 locals = List.rev $7;
 	 body = List.rev $8 } }
@@ -83,52 +61,16 @@ vdecl_list:
     /* nothing */    { [] }
   | vdecl_list vdecl { $2 :: $1 }
 
-<<<<<<< HEAD
 vdecl:
    typ ID SEMI { ($1, $2) }
 
-=======
-/*
- * If there are several global variables a list will be created
- * by the program -> program vdecl production
- *
- */
-typ:
-    INT { Int }
-  | BOOL { Bool }
-
-vdecl:
-   typ ID SEMI { ($1, $2) }
-
-/*
- * When stmt_list reaches the end of the line (its run out of statements)
- * then it returns an empty list. The empty list is then the beginning of
- * the statement list that will be appended to
- * so the frist appending looks something like this
- * 
- * stmt :: []
- * 
- * Now the statement list has the first line of the program essentially
- * at the back of the list (which will later be reversed above. 
- * recursively this stmt_list is built up by appending stmt after stmt
- * 
- * so we end with something like with real values
- *
- * { [Call("print", [Expr(Id("a"))]) ; Expr(Assign("a", Literal(42)))] }
- *
- */
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
 stmt_list:
     /* nothing */  { [] }
   | stmt_list stmt { $2 :: $1 }
 
 stmt:
     expr SEMI { Expr $1 }
-<<<<<<< HEAD
   | RETURN SEMI { Return Noexpr }
-=======
-  | RETURN SEMI { Return Noexpr}
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
   | RETURN expr SEMI { Return $2 }
   | LBRACE stmt_list RBRACE { Block(List.rev $2) }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }

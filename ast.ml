@@ -9,10 +9,6 @@ type typ = Int | Bool | Void
 
 type bind = typ * string
 
-type typ = Int | Bool
-
-type bind = typ * string
-
 type expr =
     Literal of int
   | BoolLit of bool
@@ -39,20 +35,10 @@ type func_decl = {
     body : stmt list;
   }
 
-<<<<<<< HEAD
 type program = bind list * func_decl list
 
 (* Pretty-printing functions *)
 
-=======
-(*
- * This is declaring a type "program" that is
- * a tuple (i.e. (value1, value2)) of a
- * (list of strings, list of func_decls)
- *)
-type program = bind list * func_decl list
-
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
@@ -67,7 +53,6 @@ let string_of_op = function
   | And -> "&&"
   | Or -> "||"
 
-<<<<<<< HEAD
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
@@ -80,18 +65,6 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-=======
-(*
- * end of the line
- * finally pattern matching and giving back the string as appropriate
- *)
-let rec string_of_expr = function
-    Literal(l) -> string_of_int l
-  | BoolLIt(true) -> "true"
-  | BoolLIt(false) -> "false"
-  | Id(s) -> s
-  | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
@@ -113,7 +86,6 @@ let rec string_of_stmt = function
 let string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
-<<<<<<< HEAD
   | Void -> "void"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
@@ -122,40 +94,6 @@ let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
   fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
   ")\n{\n" ^
-=======
-
-(*
- * in microc the only variable declarations are for ints
- * we are adding the human niceties like the spacing, the semicolon
- * and the carriage return
- *)
-let string_of_vdecl id = string_of_typ t ^ " " ^ id ^ ";\n"
-
-(*
- * Big payoff: essentially pull out the members of the fdecl (c-struct like)
- * object. spit out the function declaration like one normally sees it 
- * something lik this
- * 
- * function_name(var a, var b) 
- * { 
- * var c; 
- * print(c);
- * }
- *
- * With some helper functions string_of_vdecl and string_of_stmt this is done
- *
- * String.concat s1 strlst
- * will concatentate the items in the strlst inserting s1 inbetween
- * In this case we are sending it "" so that string_of_vdecl really takes over
- *
- * List.map will run the same function over the items in the list
- * [(string_of_vdecl fdecl.local_0) ; ... ; (string_of_vdecl fdecl.locals_n)]
- *)
-let string_of_fdecl fdecl =
-  string_of_typ fdecl.typ ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")\n
-  {\n" ^
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"

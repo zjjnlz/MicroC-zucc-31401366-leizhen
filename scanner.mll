@@ -32,12 +32,9 @@ rule token = parse
 | "return" { RETURN }
 | "int"    { INT }
 | "bool"   { BOOL }
-<<<<<<< HEAD
 | "void"   { VOID }
 | "true"   { TRUE }
 | "false"  { FALSE }
-=======
->>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
