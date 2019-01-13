@@ -6,8 +6,8 @@
  */
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN
-%token EQ NEQ LT LEQ GT GEQ
-%token RETURN IF ELSE FOR WHILE INT
+%token EQ NEQ LT LEQ GT GEQ TRUE FALSE
+%token RETURN IF ELSE FOR WHILE INT BOOL
 %token <int> LITERAL
 %token <string> ID
 %token EOF
@@ -39,9 +39,12 @@
  * appending the list in backwards chronological order
  */
 program:
+  decls EOF { $1 }
+
+decls:
    /* nothing */ { [], [] }
- | program vdecl { ($2 :: fst $1), snd $1 }
- | program fdecl { fst $1, ($2 :: snd $1) }
+ | decls vdecl { ($2 :: fst $1), snd $1 }
+ | decls fdecl { fst $1, ($2 :: snd $1) }
 
 /*
  * fdecl returns a type func_decl defined in ast.ml
@@ -53,11 +56,12 @@ program:
  * 
  */
 fdecl:
-   ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
-     { { fname = $1;
-	 formals = $3;
-	 locals = List.rev $6;
-	 body = List.rev $7 } }
+   typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+     { { typ = $1
+   fname = $2;
+	 formals = $4;
+	 locals = List.rev $7;
+	 body = List.rev $8 } }
 
 formals_opt:
     /* nothing */ { [] }
@@ -76,8 +80,12 @@ vdecl_list:
  * by the program -> program vdecl production
  *
  */
+typ:
+    INT { Int }
+  | BOOL { Bool }
+
 vdecl:
-   INT ID SEMI { $2 }
+   typ ID SEMI { ($1, $2) }
 
 /*
  * When stmt_list reaches the end of the line (its run out of statements)
@@ -101,8 +109,9 @@ stmt_list:
   | stmt_list stmt { $2 :: $1 }
 
 stmt:
-    expr SEMI { Expr($1) }
-  | RETURN expr SEMI { Return($2) }
+    expr SEMI { Expr $1 }
+  | RETURN SEMI { Return Noexpr}
+  | RETURN expr SEMI { Return $2 }
   | LBRACE stmt_list RBRACE { Block(List.rev $2) }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
@@ -116,6 +125,8 @@ expr_opt:
 
 expr:
     LITERAL          { Literal($1) }
+  | TRUE             { BoolLit(true) }
+  | FALSE            { BoolLit(false) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }

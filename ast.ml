@@ -1,7 +1,12 @@
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq
 
+type typ = Int | Bool
+
+type bind = typ * string
+
 type expr =
     Literal of int
+  | BoolLit of bool
   | Id of string
   | Binop of expr * op * expr
   | Assign of string * expr
@@ -22,9 +27,10 @@ type stmt =
  * is the type
  *)
 type func_decl = {
+    typ : typ;
     fname : string;
-    formals : string list;
-    locals : string list;
+    formals : bind list;
+    locals : bind list;
     body : stmt list;
   }
 
@@ -33,7 +39,21 @@ type func_decl = {
  * a tuple (i.e. (value1, value2)) of a
  * (list of strings, list of func_decls)
  *)
-type program = string list * func_decl list
+type program = bind list * func_decl list
+
+let string_of_op = function
+    Add -> "+"
+  | Sub -> "-"
+  | Mult -> "*"
+  | Div -> "/"
+  | Equal -> "=="
+  | Neq -> "!="
+  | Less -> "<"
+  | Leq -> "<="
+  | Greater -> ">"
+  | Geq -> ">="
+  | And -> "&&"
+  | Or -> "||"
 
 (*
  * end of the line
@@ -41,14 +61,10 @@ type program = string list * func_decl list
  *)
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
+  | BoolLIt(true) -> "true"
+  | BoolLIt(false) -> "false"
   | Id(s) -> s
-  | Binop(e1, o, e2) ->
-      string_of_expr e1 ^ " " ^
-      (match o with
-	Add -> "+" | Sub -> "-" | Mult -> "*" | Div -> "/"
-      | Equal -> "==" | Neq -> "!="
-      | Less -> "<" | Leq -> "<=" | Greater -> ">" | Geq -> ">=") ^ " " ^
-      string_of_expr e2
+  | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
@@ -76,12 +92,16 @@ let rec string_of_stmt = function
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
+let string_of_typ = function
+    Int -> "int"
+  | Bool -> "bool"
+
 (*
  * in microc the only variable declarations are for ints
  * we are adding the human niceties like the spacing, the semicolon
  * and the carriage return
  *)
-let string_of_vdecl id = "int " ^ id ^ ";\n"
+let string_of_vdecl id = string_of_typ t ^ " " ^ id ^ ";\n"
 
 (*
  * Big payoff: essentially pull out the members of the fdecl (c-struct like)
@@ -104,7 +124,8 @@ let string_of_vdecl id = "int " ^ id ^ ";\n"
  * [(string_of_vdecl fdecl.local_0) ; ... ; (string_of_vdecl fdecl.locals_n)]
  *)
 let string_of_fdecl fdecl =
-  fdecl.fname ^ "(" ^ String.concat ", " fdecl.formals ^ ")\n
+  string_of_typ fdecl.typ ^ " " ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")\n
   {\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^

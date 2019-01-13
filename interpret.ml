@@ -79,6 +79,18 @@ let run (vars, funcs) =
   (* Invoke a function and return an updated global symbol table *)
   let rec call fdecl actuals globals =
 
+    let eval_of_op = function
+      Add -> v1 + v2
+    | Sub -> v1 - v2
+    | Mult -> v1 * v2
+    | Div -> v1 / v2
+    | Equal -> boolean (v1 = v2)
+    | Neq -> boolean (v1 != v2)
+    | Less -> boolean (v1 < v2)
+    | Leq -> boolean (v1 <= v2)
+    | Greater -> boolean (v1 > v2)
+    | Geq -> boolean (v1 >= v2))
+
     (* Evaluate an expression and return (value, updated environment) *)
     let rec eval env = function
         (*
@@ -92,7 +104,9 @@ let run (vars, funcs) =
          * exactly as it was received and we return the result of the Literal
          * i
          *)
-	      Literal(i) -> i, env
+        Literal(i) -> i, env
+      | BoolLit(true) -> "true", env
+      | BoolLit(false) -> "false", env
       | Noexpr -> 1, env (* must be non-zero for the for loop predicate *)
       | Id(var) -> let locals, globals = env 
         in 
@@ -103,7 +117,8 @@ let run (vars, funcs) =
           let v1, env = eval env e1 in 
           let v2, env = eval env e2 in 
           let boolean i = if i then 1 else 0 in
-	        (match op with
+          eval_of_op op, env
+	        (* (match op with
 	          Add -> v1 + v2
 	        | Sub -> v1 - v2
 	        | Mult -> v1 * v2
@@ -113,7 +128,7 @@ let run (vars, funcs) =
 	        | Less -> boolean (v1 < v2)
 	        | Leq -> boolean (v1 <= v2)
 	        | Greater -> boolean (v1 > v2)
-	        | Geq -> boolean (v1 >= v2)), env
+	        | Geq -> boolean (v1 >= v2)), env *)
       (*
        * Following our example we've now called eval env with
        * eval (locals = ["b": 0], globals = ["a": 0]) (Ast.Expr (Ast.Assign ("b", Ast.Literal 42)))
