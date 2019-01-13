@@ -56,14 +56,14 @@
 
 int a;
 
-inc(x)
+int inc(x)
 {
   int y;
   y = 1;
   return x + y;
 }
 
-main()
+int main()
 {
   int b;
   b = 42;

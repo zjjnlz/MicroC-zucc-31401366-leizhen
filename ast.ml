@@ -1,4 +1,13 @@
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq
+(* Abstract Syntax Tree and functions for printing it *)
+
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
+          And | Or
+
+type uop = Neg | Not
+
+type typ = Int | Bool | Void
+
+type bind = typ * string
 
 type typ = Int | Bool
 
@@ -9,6 +18,7 @@ type expr =
   | BoolLit of bool
   | Id of string
   | Binop of expr * op * expr
+  | Unop of uop * expr
   | Assign of string * expr
   | Call of string * expr list
   | Noexpr
@@ -21,11 +31,6 @@ type stmt =
   | For of expr * expr * expr * stmt
   | While of expr * stmt
 
-(*
- * this is an OCaml record like a C Struct
- * fname is the identifier name and string 
- * is the type
- *)
 type func_decl = {
     typ : typ;
     fname : string;
@@ -34,6 +39,12 @@ type func_decl = {
     body : stmt list;
   }
 
+<<<<<<< HEAD
+type program = bind list * func_decl list
+
+(* Pretty-printing functions *)
+
+=======
 (*
  * This is declaring a type "program" that is
  * a tuple (i.e. (value1, value2)) of a
@@ -41,6 +52,7 @@ type func_decl = {
  *)
 type program = bind list * func_decl list
 
+>>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
@@ -55,6 +67,20 @@ let string_of_op = function
   | And -> "&&"
   | Or -> "||"
 
+<<<<<<< HEAD
+let string_of_uop = function
+    Neg -> "-"
+  | Not -> "!"
+
+let rec string_of_expr = function
+    Literal(l) -> string_of_int l
+  | BoolLit(true) -> "true"
+  | BoolLit(false) -> "false"
+  | Id(s) -> s
+  | Binop(e1, o, e2) ->
+      string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Unop(o, e) -> string_of_uop o ^ string_of_expr e
+=======
 (*
  * end of the line
  * finally pattern matching and giving back the string as appropriate
@@ -65,20 +91,12 @@ let rec string_of_expr = function
   | BoolLIt(false) -> "false"
   | Id(s) -> s
   | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+>>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
 
-(*
- * Pattern match and find the type 
- * statements really encapsulate expressions ("Expr")
- * As an example when string_of_stmt is handed and expression it is then
- * sent to string_of_expr to be taken care of there.
- * still this pattern matcher is still responsible for adding
- * some syntactic niceties (the carriage return, spacing, the keywords
- * in human string form and semicolons)
- *)
 let rec string_of_stmt = function
     Block(stmts) ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
@@ -95,6 +113,16 @@ let rec string_of_stmt = function
 let string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
+<<<<<<< HEAD
+  | Void -> "void"
+
+let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+
+let string_of_fdecl fdecl =
+  string_of_typ fdecl.typ ^ " " ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+  ")\n{\n" ^
+=======
 
 (*
  * in microc the only variable declarations are for ints
@@ -127,37 +155,11 @@ let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
   fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")\n
   {\n" ^
+>>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-(*
- * Entry point called by microc -a
- *
- * Reminder:
- * List.map f [a1; ... ;an] = [f a1; ... ;f an]
- * So List.map will execute string_of_vdecl on the list vars
- *
- * String.concat seperator_string list_of_strings
- * Will return a string where of concatenated list_of_strings
- * with separator_string inserted between each string in that
- * list 
- * 
- * So essentially below the first line is combining 
- * Everything in the parentheses into one big string and appending
- * "\n" to the end of it. And then appending the second line
- *
- * The second line instead adds a "\n" inbetween each item in the list
- * returned by (List.map string_of_fdecl funcs)
- * 
- * The goal of this function is to print the parsed vars and funcs
- * both are a list that will be digested peice by piece.
- * vars = the global variables declared
- * funcs = the declared/defined functions and all their infor
- *
- * After printing a list of all the variable declarations
- * print the functions
- *)
 let string_of_program (vars, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)

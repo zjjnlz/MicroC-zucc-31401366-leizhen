@@ -105,13 +105,18 @@ let run (vars, funcs) =
          * i
          *)
         Literal(i) -> i, env
+<<<<<<< HEAD
+      | BoolLit(true) -> 1, env
+      | BoolLit(false) -> 0, env
+=======
       | BoolLit(true) -> "true", env
       | BoolLit(false) -> "false", env
+>>>>>>> f851ed0f177d3cc593b4812d555eea9cf1ebe6b8
       | Noexpr -> 1, env (* must be non-zero for the for loop predicate *)
       | Id(var) -> let locals, globals = env 
         in 
-          if NameMap.mem var locals then (NameMap.find var locals), env 
-          else if NameMap.mem var globals then (NameMap.find var globals), env 
+          if NameMap.mem (var) locals then (NameMap.find ( var) locals), env 
+          else if NameMap.mem (var) globals then (NameMap.find ( var) globals), env 
           else raise (Failure ("undeclared identifier " ^ var))
       | Binop(e1, op, e2) -> 
           let v1, env = eval env e1 in 
@@ -308,7 +313,7 @@ let run (vars, funcs) =
     let arglocals =
       try List.fold_left2
 	  (fun locals formal actual -> NameMap.add formal actual locals)
-	  NameMap.empty fdecl.formals actuals
+	  NameMap.empty (List.map snd fdecl.formals) actuals
       with Invalid_argument(_) ->
 	raise (Failure ("wrong number of arguments passed to " ^ fdecl.fname))
     in (* end of let locals = *)
@@ -325,7 +330,7 @@ let run (vars, funcs) =
      *
      *)
     let locals = List.fold_left
-	(fun lmap ld -> NameMap.add ld 0 lmap) arglocals fdecl.locals
+	(fun lmap ld -> NameMap.add ld 0 lmap) arglocals (List.map snd fdecl.locals)
     in (* end of let locals = List.fold_left *)
 
     (*
@@ -365,7 +370,7 @@ let run (vars, funcs) =
       *
       * (fun gmap vd) renamed for clearity
       *)
-     (fun gmap vd -> NameMap.add vd 0 gmap) NameMap.empty vars
+     (fun gmap vd -> NameMap.add vd 0 gmap) NameMap.empty (List.map snd vars)
   in (* end of let globals = List.fold_left *)
      try
      (*

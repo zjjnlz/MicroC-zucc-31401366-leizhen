@@ -84,7 +84,7 @@ let translate (globals, functions) =
    * global_index will be something like this (this is my own
    * string map syntax) [("a": 0); ("b": 1)]
    *)
-  let global_indexes = string_map_pairs StringMap.empty (enum 1 0 globals) in
+  let global_indexes = string_map_pairs StringMap.empty (enum 1 0 (List.map snd globals) ) in
 
   (* 
    * Assign indexes to function names; built-in "print" is special 
@@ -143,8 +143,9 @@ let translate (globals, functions) =
      *)
     let num_formals = List.length fdecl.formals
     and num_locals = List.length fdecl.locals
-    and local_offsets = enum 1 1 fdecl.locals
-    and formal_offsets = enum (-1) (-2) fdecl.formals in 
+    and local_offsets = enum 1 1 (List.map snd fdecl.locals)
+    and formal_offsets = enum (-1) (-2) (List.map snd fdecl.formals)
+    in 
     (* in: num_formals, num_locals, local_offsets, formal_offsets *)
     (*
      * OCaml reminder:
