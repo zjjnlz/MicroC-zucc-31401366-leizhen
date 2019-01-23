@@ -1,29 +1,6 @@
 open Ast
 open Bytecode
 
-(* Stack layout just after "Ent":
-
-              <-- SP
-   Local n
-   ...
-   Local 0
-   Saved FP   <-- FP
-   Saved PC
-   Arg 0
-   ...
-   Arg n *)
-
-(*
- * Example of prog:
- * 
- *  prog: Bytecode.prog =
- *   {num_globals = 1;
- *    text =
- *     [|Jsr 2; Hlt; Ent 1; Lit 42; Sfp 1; Drp; Lfp 1; Jsr 15; Str 0; Drp;
- *      Lod 0; Jsr (-1); Drp; Lit 0; Rts 0; Ent 1; Lit 1; Sfp 1; Drp; Lfp (-2);
- *      Lfp 1; Bin Add; Rts 1; Lit 0; Rts 1|]}
- *)
-
 let execute_prog prog =
   (*
    * OCaml Reminder:
@@ -41,12 +18,16 @@ let execute_prog prog =
     Lit i  -> stack.(sp) <- i ; exec fp (sp+1) (pc+1)
   | Drp    -> exec fp (sp-1) (pc+1)
   | Bin op -> let op1 = stack.(sp-2) and op2 = stack.(sp-1) in     
-      stack.(sp-2) <- (let boolean i = if i then 1 else 0 in
+      stack.(sp-2) <- (
+        let boolean i = if i then 1 else 0 in
+        let int2bool i = if (i=1) then true else if (i=0) then false else true in
       match op with
-	Add     -> op1 + op2
+	    | Add     -> op1 + op2
       | Sub     -> op1 - op2
       | Mult    -> op1 * op2
       | Div     -> op1 / op2
+      | And     -> boolean (int2bool(op1) && int2bool(op2))
+      | Or      -> boolean (int2bool(op1) || int2bool(op2))
       | Equal   -> boolean (op1 =  op2)
       | Neq     -> boolean (op1 != op2)
       | Less    -> boolean (op1 <  op2)
